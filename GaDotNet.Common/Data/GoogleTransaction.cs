@@ -92,6 +92,36 @@ namespace GaDotNet.Common.Data
 			Validate();
 		}
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GoogleTransaction"/> class.
+        /// </summary>
+        /// <param name="productName">Name of the product.</param>
+        /// <param name="productSku">The product sku.</param>
+        /// <param name="orderID">The order ID. (required)</param>
+        /// <param name="affiliation">The affiliation. (required)</param>
+        /// <param name="totalCost">The total cost. (required)</param>
+        /// <param name="taxCost">The tax cost. (required)</param>
+        /// <param name="shippingCost">The shipping cost (required).</param>
+        public GoogleTransaction(string productName, string productSku, string orderID, string affiliation,
+            decimal totalCost, decimal taxCost, decimal shippingCost)
+        {
+            ProductName = productName;
+
+            ProductSku = productSku;
+
+            OrderID = orderID;
+
+            Affiliation = affiliation;
+
+            TotalCost = totalCost;
+
+            TaxCost = taxCost;
+
+            ShippingCost = shippingCost;
+
+            Validate();
+        }
+
 		/// <summary>
 		/// Validates this instance.
 		/// </summary>
