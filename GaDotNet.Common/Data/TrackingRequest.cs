@@ -100,7 +100,7 @@ namespace GaDotNet.Common.Data
 				if (TrackingEvent != null)
 					return "event";
 				if (TrackingTransaction != null)
-					return "transaction";
+					return "tran";
 
 				return "page";
 			}
