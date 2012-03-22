@@ -101,22 +101,6 @@ namespace GaDotNet.Common.Data
 			{
 				throw new Exception("'OrderID' is a required field");
 			}
-			if (String.IsNullOrEmpty(Affiliation))
-			{
-				throw new Exception("'Affiliation' is a required field");
-			}
-			if (String.IsNullOrEmpty(City))
-			{
-				throw new Exception("'City' is a required field");
-			}
-			if (String.IsNullOrEmpty(State))
-			{
-				throw new Exception("'State' is a required field");
-			}
-			if (String.IsNullOrEmpty(Country))
-			{
-				throw new Exception("'Country' is a required field");
-			}
 		}
 	}
 }
