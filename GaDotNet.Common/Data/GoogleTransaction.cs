@@ -18,25 +18,11 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
 
 namespace GaDotNet.Common.Data
 {
 	public class GoogleTransaction
 	{
-		public string ProductName { get; set; }
-
-		public string ProductSku { get; set; }
-
-		public string ProductVariant { get; set; }
-
-		public decimal UnitPrice { get; set; }
-
-		public int Quantity { get; set; }
-		
 		public string OrderID { get; set; }
 
 		public string Affiliation { get; set; }
@@ -66,13 +52,9 @@ namespace GaDotNet.Common.Data
 		/// <param name="city">The city. (required)</param>
 		/// <param name="state">The state.</param>
 		/// <param name="country">The country. (required)</param>
-		public GoogleTransaction(string productName, string productSku, string orderID, string affiliation, 
+		public GoogleTransaction(string orderID, string affiliation, 
 			decimal totalCost, decimal taxCost, decimal shippingCost, string city, string state, string country)
 		{
-			ProductName = productName;
-
-			ProductSku = productSku;
-
 			OrderID = orderID;
 
 			Affiliation = affiliation;
@@ -95,20 +77,14 @@ namespace GaDotNet.Common.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="GoogleTransaction"/> class.
         /// </summary>
-        /// <param name="productName">Name of the product.</param>
-        /// <param name="productSku">The product sku.</param>
         /// <param name="orderID">The order ID. (required)</param>
         /// <param name="affiliation">The affiliation. (required)</param>
         /// <param name="totalCost">The total cost. (required)</param>
         /// <param name="taxCost">The tax cost. (required)</param>
         /// <param name="shippingCost">The shipping cost (required).</param>
-        public GoogleTransaction(string productName, string productSku, string orderID, string affiliation,
+        public GoogleTransaction(string orderID, string affiliation,
             decimal totalCost, decimal taxCost, decimal shippingCost)
         {
-            ProductName = productName;
-
-            ProductSku = productSku;
-
             OrderID = orderID;
 
             Affiliation = affiliation;

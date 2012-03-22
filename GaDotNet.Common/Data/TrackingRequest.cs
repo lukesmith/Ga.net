@@ -48,6 +48,7 @@ namespace GaDotNet.Common.Data
 
 		public GoogleEvent TrackingEvent;
 		public GoogleTransaction TrackingTransaction;
+        public GoogleItem TrackingItem;
 
 
 		public string AnalyticsAccountCode;
@@ -101,6 +102,8 @@ namespace GaDotNet.Common.Data
 					return "event";
 				if (TrackingTransaction != null)
 					return "tran";
+                if (TrackingItem != null)
+                    return "item";
 
 				return "page";
 			}
@@ -154,85 +157,54 @@ namespace GaDotNet.Common.Data
 				// REQUEST URL FORMAT:
 				// http://www.google-analytics.com/__utm.gif?utmwv=4.6.5&utmn=488134812&utmhn=facebook.com&utmcs=UTF-8&utmsr=1024x576&utmsc=24-bit&utmul=en-gb&utmje=0&utmfl=10.0%20r42&utmdt=Facebook%20Contact%20Us&utmhid=700048481&utmr=-&utmp=%2Fwebdigi%2Fcontact&utmac=UA-3659733-5&utmcc=__utma%3D155417661.474914265.1263033522.1265456497.1265464692.6%3B%2B__utmz%3D155417661.1263033522.1.1.utmcsr%3D(direct)%7Cutmccn%3D(direct)%7Cutmcmd%3D(none)%3B
 
+			    List<KeyValuePair<string, string>> paramList;
 
-				List<KeyValuePair<string, string>> paramList = new List<KeyValuePair<string, string>>
-				{
-					new KeyValuePair<string,string>("utmwv","4.7.2"),										// Analytics version
-					new KeyValuePair<string,string>("utmn",randomNumber.Next(1000000000).ToString()),	// Random request number
-					new KeyValuePair<string,string>("utmhn",PageDomain),								// Your domain name
-					new KeyValuePair<string,string>("utmcs","UTF-8"),									// Document encoding
-					new KeyValuePair<string,string>("utmsr","-"),										// Screen Resolution
-					new KeyValuePair<string,string>("utmsc","-"),										// Screen Resolution
-					new KeyValuePair<string,string>("utmul","-"),										// user language
-					new KeyValuePair<string,string>("utmje","0"),										// java enabled or not
-					new KeyValuePair<string,string>("utmfl","-"),										// user flash version
-					new KeyValuePair<string,string>("utmdt",Uri.EscapeDataString(PageTitle)),			// page title
-					new KeyValuePair<string,string>("utmhid",randomNumber.Next(1000000000).ToString()),										// page title
-					new KeyValuePair<string,string>("utmr","-"),											// referrer URL
-					new KeyValuePair<string,string>("utmp",PageUrl),									// document page URL (relative to root)
-					new KeyValuePair<string,string>("utmac",AnalyticsAccountCode),						// Your GA account code
-					new KeyValuePair<string,string>("utmcc",UtmcCookieString),					// cookie string (encoded)
-					new KeyValuePair<string,string>("utmt",UtmtRequestType)						// type of request (page view or event etc)
-				};
+                //check if the transaction object is null and if not add the transaction params
+                if (TrackingTransaction != null)
+                {
+                    paramList = this.BuildForTransaction();
+                }
+                else if (TrackingItem != null)
+                {
+                    paramList = this.BuildForItem();
+                }
+                else
+                {
+                    paramList = new List<KeyValuePair<string, string>>
+				    {
+					    new KeyValuePair<string,string>("utmwv","4.7.2"),										// Analytics version
+					    new KeyValuePair<string,string>("utmn",randomNumber.Next(1000000000).ToString()),	// Random request number
+					    new KeyValuePair<string,string>("utmhn",PageDomain),								// Your domain name
+					    new KeyValuePair<string,string>("utmcs","UTF-8"),									// Document encoding
+					    new KeyValuePair<string,string>("utmsr","-"),										// Screen Resolution
+					    new KeyValuePair<string,string>("utmsc","-"),										// Screen Resolution
+					    new KeyValuePair<string,string>("utmul","-"),										// user language
+					    new KeyValuePair<string,string>("utmje","0"),										// java enabled or not
+					    new KeyValuePair<string,string>("utmfl","-"),										// user flash version
+					    new KeyValuePair<string,string>("utmdt",Uri.EscapeDataString(PageTitle)),			// page title
+					    new KeyValuePair<string,string>("utmhid",randomNumber.Next(1000000000).ToString()),										// page title
+					    new KeyValuePair<string,string>("utmr","-"),											// referrer URL
+					    new KeyValuePair<string,string>("utmp",PageUrl),									// document page URL (relative to root)
+					    new KeyValuePair<string,string>("utmac",AnalyticsAccountCode),						// Your GA account code
+					    new KeyValuePair<string,string>("utmcc",UtmcCookieString),					// cookie string (encoded)
+					    new KeyValuePair<string,string>("utmt",UtmtRequestType)						// type of request (page view or event etc)
+				    };
 
-				//check if our tracking event is null and if not add to the params
-				if (TrackingEvent!=null)
-				{
-					TrackingEvent.Validate();
+                    //check if our tracking event is null and if not add to the params
+                    if (TrackingEvent != null)
+                    {
+                        TrackingEvent.Validate();
 
-					//taken from http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html
-					string eventString = String.Format("5({0}*{1}*{2})({3}",
-						TrackingEvent.Category,
-						TrackingEvent.Action,
-						TrackingEvent.Label,
-						TrackingEvent.Value
-						);
-					paramList.Add(new KeyValuePair<string, string>("utme", Uri.EscapeDataString(eventString)));
-				}
-
-				//check if the transaction object is null and if not add the transaction params
-				if (TrackingTransaction!=null)
-				{
-					TrackingTransaction.Validate();
-					//taken from http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html
-
-					//add product name
-					paramList.Add(new KeyValuePair<string, string>("utmipn", Uri.EscapeDataString(TrackingTransaction.ProductName)));
-
-					//add product code/SKU
-					paramList.Add(new KeyValuePair<string, string>("utmipc", Uri.EscapeDataString(TrackingTransaction.ProductSku)));
-
-					//add unit variation (ie Red)
-					paramList.Add(new KeyValuePair<string, string>("utmiva", Uri.EscapeDataString(TrackingTransaction.ProductVariant)));
-
-					//add unit price
-					paramList.Add(new KeyValuePair<string, string>("utmipr", TrackingTransaction.UnitPrice.ToString("#.##")));
-
-					//add quantity
-					paramList.Add(new KeyValuePair<string, string>("utmiqt", TrackingTransaction.Quantity.ToString()));
-
-					//add billing city
-					paramList.Add(new KeyValuePair<string, string>("utmtci", Uri.EscapeDataString(TrackingTransaction.City)));
-					
-					//add billing country
-					paramList.Add(new KeyValuePair<string, string>("utmtco", Uri.EscapeDataString(TrackingTransaction.Country)));
-
-					// add order ID
-					paramList.Add(new KeyValuePair<string, string>("utmtid", TrackingTransaction.OrderID));
-
-					//add shipping cost
-					paramList.Add(new KeyValuePair<string, string>("utmtsp", TrackingTransaction.ShippingCost.ToString("#.##")));
-
-					//add transaction total
-					paramList.Add(new KeyValuePair<string, string>("utmtto", TrackingTransaction.TotalCost.ToString("#.##")));
-
-					//add tax total
-					paramList.Add(new KeyValuePair<string, string>("utmttx", TrackingTransaction.TaxCost.ToString("#.##")));
-				}
-
-
-
-
+                        //taken from http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html
+                        string eventString = String.Format("5({0}*{1}*{2})({3}",
+                            TrackingEvent.Category,
+                            TrackingEvent.Action,
+                            TrackingEvent.Label,
+                            TrackingEvent.Value
+                            );
+                        paramList.Add(new KeyValuePair<string, string>("utme", Uri.EscapeDataString(eventString)));
+                    }
+                }
 
 				//get final param string
 				StringBuilder GaParams = new StringBuilder();
@@ -249,7 +221,89 @@ namespace GaDotNet.Common.Data
 									 paramsFinal);
 			}
 		}
-		
+
+        private List<KeyValuePair<string, string>> BuildForTransaction()
+        {
+            Random randomNumber = new Random();
+            List<KeyValuePair<string, string>> paramList = new List<KeyValuePair<string, string>>
+				{
+					new KeyValuePair<string,string>("utmwv","5.2.6"),										// Analytics version
+					new KeyValuePair<string,string>("utmn",randomNumber.Next(1000000000).ToString()),	// Random request number
+					new KeyValuePair<string,string>("utmhn",PageDomain),								// Your domain name
+					new KeyValuePair<string,string>("utmac",AnalyticsAccountCode),						// Your GA account code
+					new KeyValuePair<string,string>("utmcc",UtmcCookieString),					// cookie string (encoded)
+					new KeyValuePair<string,string>("utmt",UtmtRequestType)						// type of request (page view or event etc)
+				};
+
+            TrackingTransaction.Validate();
+            //taken from http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html
+
+            //add billing city
+            if (TrackingTransaction.City != null)
+            {
+                paramList.Add(new KeyValuePair<string, string>("utmtci", Uri.EscapeDataString(TrackingTransaction.City)));
+            }
+
+            //add billing country
+            if (TrackingTransaction.Country != null)
+            {
+                paramList.Add(new KeyValuePair<string, string>("utmtco", Uri.EscapeDataString(TrackingTransaction.Country)));
+            }
+
+            // add order ID
+            paramList.Add(new KeyValuePair<string, string>("utmtid", TrackingTransaction.OrderID));
+
+            //add shipping cost
+            paramList.Add(new KeyValuePair<string, string>("utmtsp", TrackingTransaction.ShippingCost.ToString("#.##")));
+
+            //add transaction total
+            paramList.Add(new KeyValuePair<string, string>("utmtto", TrackingTransaction.TotalCost.ToString("#.##")));
+
+            //add tax total
+            paramList.Add(new KeyValuePair<string, string>("utmttx", TrackingTransaction.TaxCost.ToString("#.##")));
+
+            return paramList;
+        }
+
+        private List<KeyValuePair<string, string>> BuildForItem()
+        {
+            Random randomNumber = new Random();
+            var paramList = new List<KeyValuePair<string, string>>
+				{
+					new KeyValuePair<string,string>("utmwv","5.2.6"),										// Analytics version
+					new KeyValuePair<string,string>("utmn",randomNumber.Next(1000000000).ToString()),	// Random request number
+					new KeyValuePair<string,string>("utmhn",PageDomain),								// Your domain name
+					new KeyValuePair<string,string>("utmac",AnalyticsAccountCode),						// Your GA account code
+					new KeyValuePair<string,string>("utmcc",UtmcCookieString),					// cookie string (encoded)
+					new KeyValuePair<string,string>("utmt",UtmtRequestType)						// type of request (page view or event etc)
+				};
+
+            TrackingItem.Validate();
+            //taken from http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html
+
+            // add order ID
+            paramList.Add(new KeyValuePair<string, string>("utmtid", TrackingItem.OrderID));
+
+            //add product name
+            paramList.Add(new KeyValuePair<string, string>("utmipn", Uri.EscapeDataString(TrackingItem.ProductName)));
+
+            //add product code/SKU
+            paramList.Add(new KeyValuePair<string, string>("utmipc", Uri.EscapeDataString(TrackingItem.ProductSku)));
+
+            //add unit variation (ie Red)
+            if (TrackingItem.ProductVariant != null)
+            {
+                paramList.Add(new KeyValuePair<string, string>("utmiva", Uri.EscapeDataString(TrackingItem.ProductVariant)));
+            }
+
+            //add unit price
+            paramList.Add(new KeyValuePair<string, string>("utmipr", TrackingItem.UnitPrice.ToString("#.##")));
+
+            //add quantity
+            paramList.Add(new KeyValuePair<string, string>("utmiqt", TrackingItem.Quantity.ToString()));
+
+            return paramList;
+        }
 
 		#endregion
 	}
